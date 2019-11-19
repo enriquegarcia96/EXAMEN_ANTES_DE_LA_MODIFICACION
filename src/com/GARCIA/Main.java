@@ -6,9 +6,11 @@ import com.GARCIA.modelos.Usuario;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
+
 
     public static void main(String[] args){
         Scanner lector = new Scanner(System.in);
@@ -31,6 +33,7 @@ public class Main {
             System.out.println("3. busqueda por numero de identidad");
             System.out.println("4. busqueda por cualquier campo");
             System.out.println("5. eliminar");
+            System.out.println("6. Salir");
             System.out.println("ingrese su opcion:  ");
             int opcion = lector.nextInt();
 
@@ -38,6 +41,7 @@ public class Main {
             switch (opcion){
 
                 case 1:
+
                     System.out.println("ingrese su identidad");
                     String identidad = lector.next();
                     System.out.println("ingrese su nombre ");
@@ -50,73 +54,74 @@ public class Main {
                     String telefono = lector.next();
 
 
-                    Usuario usuario2 = new Usuario(identidad,nombre,apellido,correo,telefono);
+                    Usuario usuarioNuevo = new Usuario(identidad,nombre,apellido,correo,telefono);
+                    usuarioNuevo.getNombreUsuario();
+                    try{
+                        usuarioNuevo.guardar();
+                    }catch (Exception e){
+                        System.out.println(e.getMessage());
+                    }
+                    if(usuarioNuevo != null) {
+                        System.out.println("registro exitoso!!");
+                    }
 
                  break;
 
                 case 2:
-                    try {
-                        PreparedStatement setencia = Conexion.abrirConexion().prepareStatement(
-                                "select nombre_usuario from usuario"
-                        );
-                        ResultSet resultSet = setencia.executeQuery();
-                        while (resultSet.next()){
-                            System.out.println("nombre de usuario --->"+resultSet.getString(1));
-                        }
-
-
-                    }catch (SQLException e){
-                        System.out.println("Error " + e.getMessage());
-
+                    System.out.println("cuantos usuarios desea mostrar: ");
+                    int limite2 = lector.nextInt();
+                    ArrayList<Usuario> lista = Usuario.getUsuarios(limite2);
+                    for (Usuario c: lista){
+                        System.out.println(c.getNombreUsuario());
                     }
                     break;
 
                 case 3:
-                    System.out.println("ingrese el numero de identidad ");
-                    String identidad2 = lector.next();
 
-                    try {
-                        PreparedStatement setencia = Conexion.abrirConexion().prepareStatement(
-                                "select * from usuario\n" +
-                                        "where identidad = ?"
-                        );
-                        setencia.setString(1,identidad2);
-                        ResultSet resultSet = setencia.executeQuery();
-                        while (resultSet.next()){
-                            System.out.println("identidad -->"+resultSet.getString(2));
-                            System.out.println("nombre de usuario"+resultSet.getString(3));
-                            System.out.println("primer nombre"+resultSet.getString(4));
-                            System.out.println("apellido"+resultSet.getString(5));
-                            System.out.println("correo electronico"+resultSet.getString(6));
-                            System.out.println("telefono"+resultSet.getString(7));
-                            System.out.println("creacion"+resultSet.getString(8));
-                        }
-
-                    }catch (SQLException e){
-                        System.out.println("Error " + e.getMessage());
-
-                    }
-
+                    System.out.println("ingrese el numero de identidad a buscar: ");
+                    String busquedaIdentidad = lector.next();
+                    Usuario busqueda2 = Usuario.getUsuario(busquedaIdentidad);
+                    System.out.println(""+busqueda2);
                     break;
 
                 case 4:
-                    System.out.println("ingrese el campo a buscar ");
-                    String campo = lector.next();
+                    System.out.println("1.Identidad "+
+                            "2.Nombre de usuario "+
+                            "3.Primer nombre "+
+                            "4.Apellido "+
+                            "5.Correo electronico "+
+                            "6.Telefono");
+                    System.out.println("ingrese la opcion al campo a modificar: ");
+                    int campo2 = lector.nextInt();
                     System.out.println("ingrese la identidad a indentidad ");
                     String id = lector.next();
                     System.out.println("ingrese un limite de usuarios a mostrar");
                     String limite = lector.next();
 
-                 Usuario user = Usuario.buscar(campo,id,limite);
+                 //Usuario user = Usuario.buscar(campo2,id,limite);
 
+                    System.out.println("assam"+ Usuario.buscar(campo2,id,limite));
 
+                    break;
+                case 5:
+                    System.out.println("Ingrese la identidad a eliminar: ");
+                    String identida = lector.next();
+                    Boolean eliminarUsuario = Usuario.eliminar(identida);
+
+                    if (eliminarUsuario.booleanValue()){
+                        System.out.println("El registro fue eliminado con exitosamente!"+eliminarUsuario);
+                    }else {
+                        System.out.println("el usuario no existe con ese numero de identidad! "+eliminarUsuario);
+                    }
+                    break;
+                case 6:
+                    continuar = false;
+                    System.out.println("Adios!");
+                    break;
 
                 default:
             }
 
         }
-
-
-
     }
 }

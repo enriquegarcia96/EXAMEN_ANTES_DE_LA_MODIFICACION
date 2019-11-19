@@ -10,8 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.PropertyResourceBundle;
 
 public class Usuario {
+    final static private String[] CAMPOS_USUARIO = {
+            "identidad", "nombre_usuario", "primer_nombre", "apellido", "correo_electronico", "telefono"};
 
     private int codigo;
     private String identidad;
@@ -32,15 +35,13 @@ public class Usuario {
 
     }
 
-    private Usuario(String identidad, String nombre, String apellido,
-                    String correoElectronico, String telefono){
+    public Usuario(String identidad, String nombre, String apellido,
+                   String correoElectronico, String telefono) {
         this.setIdentidad(identidad);
         this.setNombre(nombre);
         this.setApellido(apellido);
         this.setCorreoElectronico(correoElectronico);
         this.setTelefono(telefono);
-
-
     }
 
     public int getCodigo() {
@@ -151,9 +152,9 @@ public class Usuario {
                 sentencia.setInt(7, this.getCodigo());
             }
             sentencia.setString(1, this.getIdentidad());
-            sentencia.setString(2, this.getNombre());
-            sentencia.setString(3, this.getApellido());
-            sentencia.setString(4, this.getNombreUsuario());
+            sentencia.setString(2, this.getNombreUsuario());
+            sentencia.setString(3, this.getNombre());
+            sentencia.setString(4, this.getApellido());
             sentencia.setString(5, this.getCorreoElectronico());
             sentencia.setString(6, this.getTelefono());
             boolean resultado = sentencia.execute();
@@ -189,22 +190,7 @@ public class Usuario {
 
     }
 
-    public static Usuario getUsuario(String identidad) {
-        try {
-            PreparedStatement sentencia = Conexion.abrirConexion().prepareStatement(
-                    "SELECT * FROM usuario WHERE identidad = ?"
-            );
-            sentencia.setString(1, identidad);
-            ResultSet resultado = sentencia.executeQuery();
-            while (resultado.next()) {
 
-                return Usuario.crearInstancia(resultado);
-            }
-        } catch (SQLException e) {
-            System.err.println("Algo salio mal " + e.getMessage());
-        }
-        return null;
-    }
 
     private static Usuario crearInstancia(ResultSet resultado) {
         Usuario usuario = null;
@@ -229,38 +215,67 @@ public class Usuario {
         return this.identidad + " - " + this.nombre;
     }
 
-    public static Usuario buscar(String campo, String valor, String limite){
-        Usuario usuario = null;
+
+
+
+
+    public static Usuario getUsuario(String identidad) {
         try {
-            PreparedStatement setencia = Conexion.abrirConexion().prepareStatement(
-                    "select * from usuario  where "+campo+" = ? and "+valor+" = ? and  limit ? "
+            PreparedStatement sentencia = Conexion.abrirConexion().prepareStatement(
+                    "SELECT * FROM usuario WHERE identidad = ?"
             );
-            setencia.setString(1,campo);
-            setencia.setString(2,valor);
-            setencia.setString(3,limite);
-            ResultSet resultado = setencia.executeQuery();
-
-            while (resultado.next()){
-                System.out.println("identidad" + resultado.getString(2));
-                System.out.println("nombre de usuario" + resultado.getString(3));
-                System.out.println("pirmer nombre" + resultado.getString(4));
-                System.out.println("apellido" + resultado.getString(5));
-                System.out.println("correo electronico" + resultado.getString(6));
-                System.out.println("telefono" + resultado.getString(7));
-                System.out.println("creacion" + resultado.getDate(8));
+            sentencia.setString(1, identidad);
+            ResultSet resultado = sentencia.executeQuery();
+            while (resultado.next()) {
+                return Usuario.crearInstancia(resultado);
             }
-
-        }catch (SQLException e){
-            System.err.println("Algo salio mal tu " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Algo salio mal " + e.getMessage());
         }
         return null;
     }
 
-    public static Usuario eliminar(String identi){
-        PreparedStatement setencia = Conexion.abrirConexion().prepareStatement(
-                "delete from usuario where  identidad = ?"
-        );
-            return null;
+    public static Usuario buscar(int campo, String valor, String limite) {
+        try {
+            if (campo >= 1 && campo <= 6) {
+                String campoBuscado = CAMPOS_USUARIO[campo - 1];
+
+                PreparedStatement resultado = Conexion.abrirConexion().prepareStatement(
+                          "select * from usuario where "+campoBuscado+" = ? limit "+limite+""
+                        //"SELECT usuario." + campoBuscado + " FROM usuario WHERE " + campoBuscado + " = ? LIMIT " + limite + ""
+                );
+                resultado.setString(1, valor);
+               // resultado.setString(2, limite);
+                //resultado.setString(2,limite);
+
+                ResultSet resultSet = resultado.executeQuery();
+                while (resultSet.next()) {
+                    System.out.println("=>" + resultSet.getString(2));
+                    System.out.println("=>" + resultSet.getString(3));
+                    System.out.println("=>" + resultSet.getString(4));
+                    System.out.println("=>" + resultSet.getString(5));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Algo salio mal " + e.getMessage());
+        }
+        return null;
+    }
+
+
+    public static boolean eliminar(String eliminarUsuario){
+        PreparedStatement setencia =null;
+        try {
+             setencia = Conexion.abrirConexion().prepareStatement(
+                    "delete from usuario where identidad = ?;"
+            );
+            setencia.setString(1,eliminarUsuario);
+            setencia.execute();
+            return true;
+        }catch (SQLException e){
+            System.err.println(e.getMessage());
+        }
+        return false;
     }
 
 }
